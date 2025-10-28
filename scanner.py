@@ -68,13 +68,28 @@ class Scanner:
         except TypeError:
             return False
 
-# print_directory()
-# try:
-#     if directoryToScan:
-#         print(os.listdir(directoryToScan))
-#     else:
-#         print(os.listdir())
-# except FileNotFoundError:
+    def _get_file_list(self) -> list:
+        """
+        gets a list of all files in the directoy to be scanned
+        #TODO currently ignores directories, does not scan recusively
+        """
+        directoryContents =  os.listdir(self._directoryToScan)
+        fileList = []
+        for item in directoryContents:
+            if os.path.isfile(f"{self._directoryToScan}/{item}"):
+                fileList.append(item)
+        return fileList
+
+    def _get_file_contents(self, fileName) -> list:
+        """
+        gets all the content of a file and returns it as a list
+        """
+        if not isinstance(fileName, str):
+            raise TypeError(f"fileName is {type(fileName)}, but must be a str")
+
+        with open(fileName) as f:
+            return f.readlines()
 
 s = Scanner()
+s._get_file_list()
 # s.change_directory()

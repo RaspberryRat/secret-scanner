@@ -74,6 +74,11 @@
             "name": "Base64 encoded key",
             "regex": "(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{40,}={0,2}(?![A-Za-z0-9+/])",
             "description": "Base64 encode pattern"
+        },
+        {
+            "name": "Email with password",
+            "regex": "a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}:[^\\s]{4,}",
+            "description": "email with password pattern"
         }
     ]
 }

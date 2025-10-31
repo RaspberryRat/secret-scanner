@@ -21,10 +21,12 @@ class Scanner:
         self._rulesData = {}
 
         # load rules
-        rules_data = json.load(open(customRules))
-        for rule in rules_data['rules']:
-            regex = re.compile(rule['name'])
-            self._rulesData[rule['regex']] = regex
+        with open(customRules, 'r') as rules:
+            rulesData = json.load(rules)
+
+        for rule in rulesData['rules']:
+            regex = re.compile(rule['regex'])
+            self._rulesData[rule['name']] = regex
 
     def get_current_rules(self) -> dict:
         """
@@ -32,7 +34,7 @@ class Scanner:
         """
         return self._rulesData
 
-    def change_custome_rules(self, rulesPath: str) -> None:
+    def change_custom_rules(self, rulesPath: str) -> None:
         """
         change the custom rule set used for scanning
 
@@ -161,20 +163,25 @@ class Scanner:
         fileList = self._get_file_list()
 
         for fileName in fileList:
-            fileContents = self._get_file_contents(fileName)
+            absoluteFilePath = self._directoryToScan + fileName
+            fileContents = self._get_file_contents(absoluteFilePath)
             # need method to scan file contents
+            secretDict = self._scan_for_secrets(fileContents)
+
+            if secretDict:
+                self._display_secrets(secretDict)
 
 
-    def _scan_for_secrets(self, fileContents: str):
+    def _scan_for_secrets(self, fileContents: list) -> dict:
         """
         internal method that scans a string for possible passwords and secrets
 
         Parameters:
             fileContents:
-                a str from a file to scan
+                a list of lines from a file to scan
 
         Returns:
-            unsure yet
+            Dictionary of line numbers as keys and matched secrets as values
 
         Precondition:
             fileContents must be of the correct type
@@ -184,17 +191,48 @@ class Scanner:
                 if fileContents not of the correct type
         """
 
-        if not isinstance(fileContents, str):
-            raise TypeError("fileContents must be a str but is: "
+        if not isinstance(fileContents, list):
+            raise TypeError("fileContents must be a list but is: "
                             f"{type(fileContents)}")
 
-        # rules_data = json.load(open("rules.json"))
+        secretDict = {}
 
-        # for rule in rules_data['rules']:
-        #     regex = re.compile(rule['name'])
-        #     print(regex)
+        for i in range(len(fileContents)):
+            # if line matches a secret add to dict
+            for ruleName, pattern in self._rulesData.items():
+                if pattern.search(fileContents[i]):
+                    secretDict[i] = (ruleName, fileContents[i].strip())
+
+        return secretDict
+
+    def _display_secrets(self, secretDict: dict) -> None:
+        """
+        prints out all found secrets in the terminal
+
+        Precondition:
+            secretDict is of the correct type
+            secretDict is not empty
+
+        Postcondition:
+            Displays line number, regex pattern name, and full text of line
+            with potential secret to terminal
+
+        Raises:
+            TypeError:
+                if secretDict not of the correct type
+        """
+        if not isinstance(secretDict, dict):
+            raise TypeError("secretDict must be a dictionary but is "
+                            f"{type(secretDict)}")
+
+        for lineNumber, secrets in secretDict.items():
+            print(f"Secret found at line number: {lineNumber}.")
+            print(f"Secret matched pattern: {secrets[0]}.")
+            print(f"Line containing potential secret: {secrets[1]}")
+
+
 
 
 s = Scanner()
-s._scan_for_secrets('test')
-# s.change_directory()
+s.change_directory("tests/data/")
+s.scan()

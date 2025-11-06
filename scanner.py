@@ -196,12 +196,21 @@ class Scanner:
                             f"{type(fileContents)}")
 
         secretDict = {}
-        # Is overwriting if a later rule conflicts with earlier, need conditional here
+        # TODO Is overwriting if a later rule conflicts with earlier, need conditional here
         for i in range(len(fileContents)):
             # if line matches a secret add to dict
             for ruleName, pattern in self._rulesData.items():
                 if pattern.search(fileContents[i]):
-                    secretDict[i] = (ruleName, fileContents[i].strip())
+                    if i in secretDict:
+                        if type(secretDict[i]) == list:
+                        # TODO haven't checked if worked
+                            secretList = []
+                            secretList.append(secretDict[i])
+                            secretDict[i] = secretList
+                        else:
+                            secretDict[i].append(fileContents[i].strip())
+                    else:
+                        secretDict[i] = (ruleName, fileContents[i].strip())
 
         return secretDict
 

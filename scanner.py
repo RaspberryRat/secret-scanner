@@ -196,7 +196,7 @@ class Scanner:
                             f"{type(fileContents)}")
 
         secretDict = {}
-
+        # Is overwriting if a later rule conflicts with earlier, need conditional here
         for i in range(len(fileContents)):
             # if line matches a secret add to dict
             for ruleName, pattern in self._rulesData.items():
@@ -234,5 +234,15 @@ class Scanner:
 
 
 s = Scanner()
-s.change_directory("tests/data/")
-s.scan()
+# s.change_directory("tests/data/")
+# s.scan()
+
+test_generic_api = [
+        "api_endpoint = 'https://api.example.com'",
+        "api_key = 'sk_live_1234567890abcdefghij'",  # Should match (30 chars)
+        "license_key = 'ABC-123-DEF-456'",  # Should NOT match (too short)
+        "token = 'abc123'",  # Should NOT match
+        "normal_code = 'some_function_call()'",
+        "another_key = 'short'",  # Should NOT match
+    ]
+print(s._scan_for_secrets(test_generic_api))
